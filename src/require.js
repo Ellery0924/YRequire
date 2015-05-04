@@ -56,7 +56,8 @@ var _getBaseUrl = function (url) {
 };
 
 //根据模块id获取模块文件路径，正常情况下为baseUrl+相对于baseUrl的剩余部分
-//如果用户在map中自定义了别名，则以用户自定义的别名为准
+//如果用户在map中自定义了别名，则先从map中读取别名对应的路径，然后按照正常情况处理
+//如果是绝对路径，则直接返回绝对路径
 var _getRealPath = function (modId) {
 
     var map = option.map,
@@ -80,7 +81,7 @@ var _getCurrentSrc = function () {
 
 //根据脚本src属性创建一个模块id
 //将会统一替换掉服务器根路径，以及引用了主文件的页面的上层路径，还有.js后缀
-//如果用户在option.map中指定了模块的缩写，则使用缩写替换默认路径
+//如果用户在option.map中指定了模块的别名，则使用别名替换默认路径
 var _createId = function (url) {
 
     var host = window.location.origin,
@@ -105,7 +106,7 @@ var _createId = function (url) {
     return id;
 };
 
-//根据key获得一个模块，key可以是map中用户自定义的id，也可以是默认的id
+//根据key获得一个模块，key可以是map中用户自定义的别名，也可以是默认的id，也可以是通过define的第一个参数定义的id
 //先尝试直接根据id从module对象直接读取
 //如果在module对象中找不到，则尝试在module.alias中寻找用户定义的id(define的第一个参数指定的id，而非option.map中的别名)，然后从module中尝试读取
 //非常不推荐后一种做法，用户自定义id将在构建工具中使用
