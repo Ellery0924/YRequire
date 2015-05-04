@@ -15,7 +15,7 @@ require(
         'vendor/mod1',
         '/YRequire/mod3',
         'vendor/jquery-ui',
-        'http://sjs3.sinajs.cn/video/ent/idolbb/js/comp/load',
+        'http://sjs2.sinajs.cn/video/volunteer/js/core/core.js',
         'mod2'
     ], function (mod1, mod3,_,__,mod2) {
 
