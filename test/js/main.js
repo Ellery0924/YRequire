@@ -6,7 +6,7 @@ require.config({
     baseUrl: 'js/',
     map: {
         'mod2': 'vendor/mod2',
-        'jquery': 'vendor/jquery'
+        'jquery': 'http://code.jquery.com/jquery-1.10.2.js'
     }
 });
 
@@ -15,7 +15,6 @@ require(
         'vendor/mod1',
         '/YRequire/mod3',
         'vendor/jquery-ui',
-        'http://sjs2.sinajs.cn/video/volunteer/js/core/core.js',
         'mod2'
     ], function (mod1, mod3,_,__,mod2) {
 

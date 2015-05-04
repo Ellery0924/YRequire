@@ -1,7 +1,7 @@
 /**
  * Created by Ellery1 on 15/4/27.
  */
-define('mod1Id', ['jquery'], function ($) {
+define(['jquery'], function ($) {
 
     console.log($);
 
