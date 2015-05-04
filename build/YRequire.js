@@ -13,6 +13,7 @@ if (!indexOf) {
         for (var i = 0; i < arr.length; i++) {
 
             if (arr [i] === value) {
+
                 ret = i;
             }
         }
@@ -324,6 +325,8 @@ var loader = (function () {
 })();
 /**
  * Created by Ellery1 on 15/4/30.
+ * AMD模块加载器，使用方式几乎和RequireJS完全相同
+ * 仅实现了RequireJS的基础特性，不支持shims,懒加载等高级特性
  */
 
 var option = {
@@ -515,7 +518,7 @@ var define = function (id, deps, callback) {
     }
 
     //修正参数
-    //如果接受一个参数，且这个参数是function或者object，则将它修正为callback
+    //如果只接受一个参数，且这个参数是function或者object，则将它修正为callback
     if (!deps && !callback && (isFunction(id) || isObject(id))) {
 
         callback = id;

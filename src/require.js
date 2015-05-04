@@ -193,7 +193,7 @@ var define = function (id, deps, callback) {
     }
 
     //修正参数
-    //如果接受一个参数，且这个参数是function或者object，则将它修正为callback
+    //如果只接受一个参数，且这个参数是function或者object，则将它修正为callback
     if (!deps && !callback && (isFunction(id) || isObject(id))) {
 
         callback = id;
