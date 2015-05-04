@@ -1,5 +1,7 @@
 /**
  * Created by Ellery1 on 15/4/30.
+ * AMD模块加载器，使用方式几乎和RequireJS完全相同
+ * 仅实现了RequireJS的基础特性，不支持shims,懒加载等高级特性
  */
 
 var option = {
