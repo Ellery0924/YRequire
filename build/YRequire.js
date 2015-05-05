@@ -2,11 +2,12 @@
 
 "use strict";
 
-var inArray,
+var _inArray,
     indexOf = Array.prototype.indexOf;
 
 if (!indexOf) {
-    inArray = function (arr, value) {
+
+    _inArray = function (arr, value) {
 
         var ret = -1;
 
@@ -23,26 +24,26 @@ if (!indexOf) {
 }
 else {
 
-    inArray = function (arr, value) {
+    _inArray = function (arr, value) {
 
         return indexOf.call(arr, value);
     }
 }
 
-var noop = function () {
+var _noop = function () {
 };
 
-var isFunction = function (func) {
+var _isFunction = function (func) {
 
     return Object.prototype.toString.call(func) === '[object Function]';
 };
 
-var isArray = function (arr) {
+var _isArray = function (arr) {
 
     return Object.prototype.toString.call(arr) === '[object Array]';
 };
 
-var isObject = function (obj) {
+var _isObject = function (obj) {
 
     return Object.prototype.toString.call(obj) === '[object Object]';
 };
@@ -51,9 +52,9 @@ var isObject = function (obj) {
 if (!window.console) {
 
     window.console = {
-        log: noop,
-        warn: noop,
-        error: noop
+        log: _noop,
+        warn: _noop,
+        error: _noop
     }
 }
 /*
@@ -114,7 +115,7 @@ var loader = (function () {
     };
 
     //工具函数，向document.head中插入一个script标签，但阻止浏览器自动解析其中的js代码
-    var insertScriptNotEval = function (script, src, scriptText) {
+    var _insertScriptNotEval = function (script, src, scriptText) {
 
         head.appendChild(script);
 
@@ -131,7 +132,7 @@ var loader = (function () {
     //判断是否为绝对路径或者以http://开头的url
     //如果是以上两种情况，忽略root而直接使用传入的绝对路径
     //如果不是，则在所有传入的路径前加上root
-    var modifyPath = function (path) {
+    var _modifyPath = function (path) {
 
         var root = option.root ? option.root.replace(rlastSlash, '') + "/" : "",
             isAbsoluteUrl = rabsoluteUrl.test(path);
@@ -140,7 +141,7 @@ var loader = (function () {
     };
 
     //工具函数，为script/link标签设置附加属性
-    var setAttr = function (file, script, isJs) {
+    var _setAttr = function (file, script, isJs) {
 
         for (var attr in file) {
 
@@ -152,7 +153,7 @@ var loader = (function () {
     };
 
     //工具函数，发送一个同步ajax请求
-    var sendSyncRequest = function (src) {
+    var _sendSyncRequest = function (src) {
 
         var xhrSync = new XMLHttpRequest();
         xhrSync.open("GET", src, false);
@@ -199,7 +200,7 @@ var loader = (function () {
             //修正file对象
             file = typeof file === 'object' ? file : {path: file};
             //修正src
-            src = modifyPath(file.path);
+            src = _modifyPath(file.path);
             script = document.createElement('script');
 
             //同步加载模式
@@ -207,16 +208,16 @@ var loader = (function () {
             //之后插入script标签，并且通过一些很奇怪的方法阻止浏览器自动解析新插入的script标签
             if (isSync) {
 
-                resText = sendSyncRequest(src);
+                resText = _sendSyncRequest(src);
 
                 //手动解析js代码
                 globalEval(resText);
 
-                insertScriptNotEval(script, src, resText);
+                _insertScriptNotEval(script, src, resText);
 
                 scripts.push(script);
 
-                setAttr(file, script, true);
+                _setAttr(file, script, true);
             }
             //异步加载
             else {
@@ -244,7 +245,7 @@ var loader = (function () {
 
                     scripts.push(script);
 
-                    setAttr(file, script, true);
+                    _setAttr(file, script, true);
                 }
                 //特殊模式，异步下载脚本但不解析
                 else if (isAsyncNotEval) {
@@ -272,7 +273,7 @@ var loader = (function () {
 
                                     //向head插入一个script标签但制止浏览器自动解析脚本
                                     script = document.createElement('script');
-                                    insertScriptNotEval(script, this.src, this.responseText);
+                                    _insertScriptNotEval(script, this.src, this.responseText);
 
                                     //所有脚本下载完成后触发回调
                                     if (--count === 0) {
@@ -280,7 +281,7 @@ var loader = (function () {
                                         callback(scripts);
                                     }
 
-                                    setAttr(this.file, script, true);
+                                    _setAttr(this.file, script, true);
                                 }
                                 else {
 
@@ -308,10 +309,10 @@ var loader = (function () {
         var link = document.createElement('link'),
             rel = file.rel || "stylesheet";
 
-        link.href = modifyPath(file.path);
+        link.href = _modifyPath(file.path);
         link.rel = rel;
 
-        setAttr(file, link, false);
+        _setAttr(file, link, false);
 
         head.appendChild(link);
     };
@@ -381,7 +382,8 @@ var _getBaseUrl = function (url) {
 };
 
 //根据模块id获取模块文件路径，正常情况下为baseUrl+相对于baseUrl的剩余部分
-//如果用户在map中自定义了别名，则以用户自定义的别名为准
+//如果用户在map中自定义了别名，则先从map中读取别名对应的路径，然后按照正常情况处理
+//如果是绝对路径，则直接返回绝对路径
 var _getRealPath = function (modId) {
 
     var map = option.map,
@@ -405,7 +407,7 @@ var _getCurrentSrc = function () {
 
 //根据脚本src属性创建一个模块id
 //将会统一替换掉服务器根路径，以及引用了主文件的页面的上层路径，还有.js后缀
-//如果用户在option.map中指定了模块的缩写，则使用缩写替换默认路径
+//如果用户在option.map中指定了模块的别名，则使用别名替换默认路径
 var _createId = function (url) {
 
     var host = window.location.origin,
@@ -430,7 +432,7 @@ var _createId = function (url) {
     return id;
 };
 
-//根据key获得一个模块，key可以是map中用户自定义的id，也可以是默认的id
+//根据key获得一个模块，key可以是map中用户自定义的别名，也可以是默认的id，也可以是通过define的第一个参数定义的id
 //先尝试直接根据id从module对象直接读取
 //如果在module对象中找不到，则尝试在module.alias中寻找用户定义的id(define的第一个参数指定的id，而非option.map中的别名)，然后从module中尝试读取
 //非常不推荐后一种做法，用户自定义id将在构建工具中使用
@@ -519,7 +521,7 @@ var define = function (id, deps, callback) {
 
     //修正参数
     //如果只接受一个参数，且这个参数是function或者object，则将它修正为callback
-    if (!deps && !callback && (isFunction(id) || isObject(id))) {
+    if (!deps && !callback && (_isFunction(id) || _isObject(id))) {
 
         callback = id;
         deps = [];
@@ -530,7 +532,7 @@ var define = function (id, deps, callback) {
 
         //如果第二个参数是function/object,第一个参数是数组，
         //将第一个参数修正为deps,第二个参数修正为callback
-        if ((isFunction(deps) || isObject(deps)) && isArray(id)) {
+        if ((_isFunction(deps) || _isObject(deps)) && _isArray(id)) {
 
             callback = deps;
             deps = id;
@@ -538,7 +540,7 @@ var define = function (id, deps, callback) {
         }
         //如果第一个参数是字符串，第二个参数是function/object
         //将第二个参数修正为callback
-        else if (typeof id === 'string' && (isFunction(deps) || isObject(deps))) {
+        else if (typeof id === 'string' && (_isFunction(deps) || _isObject(deps))) {
 
             callback = deps;
             deps = [];
@@ -562,15 +564,14 @@ var define = function (id, deps, callback) {
         id: modId,
         deps: deps,
         callback: callback,
-        status: 0,
         exports: null,
         realUrl: realSrc
     };
 
     //如果callback是对象，则直接将它置为exports
-    if (isObject(callback)) {
+    if (_isObject(callback)) {
 
-        module.mods[modId].callback = noop;
+        module.mods[modId].callback = _noop;
         module.mods[modId].exports = callback;
     }
 
@@ -583,7 +584,7 @@ var define = function (id, deps, callback) {
             realUrl = _getRealUrl(realPath);
 
         //检测这个依赖是否已经加载过，如果已经加载过则跳过以下代码
-        if (inArray(loadedMods, realPath) === -1) {
+        if (_inArray(loadedMods, realPath) === -1) {
 
             //如果依赖没有被加载过，则将真实路径推入loadedMods数组
             loadedMods.push(realPath);
@@ -619,5 +620,13 @@ require.config = config;
 //暴露全局变量
 window.define = define;
 window.require = require;
+window.YRequire = {
+    define: define,
+    require: require,
+    getModule: function () {
+
+        return module;
+    }
+};
 
 })( window );

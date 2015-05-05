@@ -1,8 +1,9 @@
-var inArray,
+var _inArray,
     indexOf = Array.prototype.indexOf;
 
 if (!indexOf) {
-    inArray = function (arr, value) {
+
+    _inArray = function (arr, value) {
 
         var ret = -1;
 
@@ -19,26 +20,26 @@ if (!indexOf) {
 }
 else {
 
-    inArray = function (arr, value) {
+    _inArray = function (arr, value) {
 
         return indexOf.call(arr, value);
     }
 }
 
-var noop = function () {
+var _noop = function () {
 };
 
-var isFunction = function (func) {
+var _isFunction = function (func) {
 
     return Object.prototype.toString.call(func) === '[object Function]';
 };
 
-var isArray = function (arr) {
+var _isArray = function (arr) {
 
     return Object.prototype.toString.call(arr) === '[object Array]';
 };
 
-var isObject = function (obj) {
+var _isObject = function (obj) {
 
     return Object.prototype.toString.call(obj) === '[object Object]';
 };
@@ -47,8 +48,8 @@ var isObject = function (obj) {
 if (!window.console) {
 
     window.console = {
-        log: noop,
-        warn: noop,
-        error: noop
+        log: _noop,
+        warn: _noop,
+        error: _noop
     }
 }

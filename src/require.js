@@ -195,7 +195,7 @@ var define = function (id, deps, callback) {
 
     //修正参数
     //如果只接受一个参数，且这个参数是function或者object，则将它修正为callback
-    if (!deps && !callback && (isFunction(id) || isObject(id))) {
+    if (!deps && !callback && (_isFunction(id) || _isObject(id))) {
 
         callback = id;
         deps = [];
@@ -206,7 +206,7 @@ var define = function (id, deps, callback) {
 
         //如果第二个参数是function/object,第一个参数是数组，
         //将第一个参数修正为deps,第二个参数修正为callback
-        if ((isFunction(deps) || isObject(deps)) && isArray(id)) {
+        if ((_isFunction(deps) || _isObject(deps)) && _isArray(id)) {
 
             callback = deps;
             deps = id;
@@ -214,7 +214,7 @@ var define = function (id, deps, callback) {
         }
         //如果第一个参数是字符串，第二个参数是function/object
         //将第二个参数修正为callback
-        else if (typeof id === 'string' && (isFunction(deps) || isObject(deps))) {
+        else if (typeof id === 'string' && (_isFunction(deps) || _isObject(deps))) {
 
             callback = deps;
             deps = [];
@@ -238,15 +238,14 @@ var define = function (id, deps, callback) {
         id: modId,
         deps: deps,
         callback: callback,
-        status: 0,
         exports: null,
         realUrl: realSrc
     };
 
     //如果callback是对象，则直接将它置为exports
-    if (isObject(callback)) {
+    if (_isObject(callback)) {
 
-        module.mods[modId].callback = noop;
+        module.mods[modId].callback = _noop;
         module.mods[modId].exports = callback;
     }
 
@@ -259,7 +258,7 @@ var define = function (id, deps, callback) {
             realUrl = _getRealUrl(realPath);
 
         //检测这个依赖是否已经加载过，如果已经加载过则跳过以下代码
-        if (inArray(loadedMods, realPath) === -1) {
+        if (_inArray(loadedMods, realPath) === -1) {
 
             //如果依赖没有被加载过，则将真实路径推入loadedMods数组
             loadedMods.push(realPath);
@@ -295,3 +294,11 @@ require.config = config;
 //暴露全局变量
 window.define = define;
 window.require = require;
+window.YRequire = {
+    define: define,
+    require: require,
+    getModule: function () {
+
+        return module;
+    }
+};
