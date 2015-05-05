@@ -355,7 +355,7 @@ var module = {
     //option对象的引用
     option: option
 };
-var loadedMods = [];
+var loadedMods = [], depRelations = [];
 
 //设置option
 var config = function (opt) {
@@ -412,21 +412,27 @@ var _getCurrentSrc = function () {
     return document.currentScript.src;
 };
 
+var _getRelativePath = function (url) {
+
+    var host = window.location.origin,
+        pageRoot = window.location.pathname.replace(rhtml, '');
+
+    return url
+        .replace(host, '')
+        .replace(pageRoot, '')
+        .replace(rJs, '')
+        .replace(_getBaseUrl(option.baseUrl), '');
+};
+
 //根据脚本src属性创建一个模块id
 //将会统一替换掉服务器根路径，以及引用了主文件的页面的上层路径，还有.js后缀
 //如果用户在option.map中指定了模块的别名，则使用别名替换默认路径
 var _createId = function (url) {
 
-    var host = window.location.origin,
-        pageRoot = window.location.pathname.replace(rhtml, ''),
-        id,
+    var id,
         map = option.map;
 
-    id = url
-        .replace(host, '')
-        .replace(pageRoot, '')
-        .replace(rJs, '')
-        .replace(_getBaseUrl(option.baseUrl), '');
+    id = _getRelativePath(url);
 
     for (var key in map) {
 
@@ -556,8 +562,11 @@ var define = function (id, deps, callback) {
 
     //获取当前script标签的src属性
     var realSrc = _getCurrentSrc(),
+        realSrcWithoutOrigin = _getRelativePath(realSrc),
     //为模块分配一个id
         modId = _createId(realSrc);
+
+    depRelations.push(realSrcWithoutOrigin + ' ' + realSrcWithoutOrigin);
 
     //如果用户自定义id，则使用用户的自定义id为模块id
     if (id) {
@@ -588,29 +597,42 @@ var define = function (id, deps, callback) {
         var dep = deps[i];
         //获取依赖的真实路径和url
         var realPath = _getRealPath(dep),
-            realUrl = _getRealUrl(realPath);
+            realUrl = _getRealUrl(realPath),
+        //判断循环引用使用的变量
+            realPathWithoutBase = _getRelativePath(realPath),
+            depRelation = realSrcWithoutOrigin + ' ' + realPathWithoutBase,
+            reverse = realPathWithoutBase + ' ' + realSrcWithoutOrigin;
 
-        //检测这个依赖是否已经加载过，如果已经加载过则跳过以下代码
-        if (_inArray(loadedMods, realPath) === -1) {
+        if (_inArray(depRelations, depRelation) === -1) {
 
-            //如果依赖没有被加载过，则将真实路径推入loadedMods数组
-            loadedMods.push(realPath);
+            depRelations.push(reverse);
 
-            //计数器加1
-            module.pending++;
+            //检测这个依赖是否已经加载过，如果已经加载过则跳过以下代码
+            if (_inArray(loadedMods, realPath) === -1) {
 
-            //加载依赖
-            //完成后将计数器减1
-            //当计数器为0时（即所有模块都已加载完成），触发_allLoaded回调
-            loader.load([realUrl], function () {
+                //如果依赖没有被加载过，则将真实路径推入loadedMods数组
+                loadedMods.push(realPath);
 
-                module.pending--;
+                //计数器加1
+                module.pending++;
 
-                if (module.pending === 0) {
+                //加载依赖
+                //完成后将计数器减1
+                //当计数器为0时（即所有模块都已加载完成），触发_allLoaded回调
+                loader.load([realUrl], function () {
 
-                    _allLoaded();
-                }
-            });
+                    module.pending--;
+
+                    if (module.pending === 0) {
+
+                        _allLoaded();
+                    }
+                });
+            }
+        }
+        else {
+
+            throw new Error('循环引用：' + depRelation);
         }
     }
 };
