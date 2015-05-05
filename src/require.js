@@ -297,6 +297,7 @@ window.require = require;
 window.YRequire = {
     define: define,
     require: require,
+    loader: loader,
     getModule: function () {
 
         return module;

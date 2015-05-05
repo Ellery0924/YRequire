@@ -58,7 +58,8 @@ if (!window.console) {
     }
 }
 /*
- * 脚本/css文件加载器，支持加载js和css文件并解析，为XRequire提供底层支持，也可以单独使用
+ * 脚本/css文件加载器，支持加载js和css文件并解析，为XRequire和YRequire提供底层支持，也可以单独使用
+ * 在YRequire全局变量中内置了loader的引用
  * 其中js有异步和同步两种模式，异步模式下有两种子模式：异步下载并解析，异步下载但不解析
  * 三种模式的实现方式分别是：
  * 同步：同步ajax请求获取脚本文本+全局eval，之后向document.head中插入script标签但阻止浏览器自动解析
@@ -317,10 +318,16 @@ var loader = (function () {
         head.appendChild(link);
     };
 
+    var loadHtml = function (file) {
+
+        return _sendSyncRequest(_modifyPath(file));
+    };
+
     return {
         config: config,
         load: load,
         loadCss: loadCss,
+        loadHtml: loadHtml,
         globalEval: globalEval
     };
 })();
@@ -623,6 +630,7 @@ window.require = require;
 window.YRequire = {
     define: define,
     require: require,
+    loader: loader,
     getModule: function () {
 
         return module;
