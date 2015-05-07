@@ -5,7 +5,7 @@
 require.config({
     baseUrl: 'js',
     map: {
-        'mod2': '/YRequire/test/js/vendor/mod2',
+        'http://mod2test': '/YRequire/test/js/vendor/mod2',
         'jquery': 'http://code.jquery.com/jquery-1.10.2.js',
     }
 });

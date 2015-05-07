@@ -25,6 +25,18 @@ var module = {
 };
 var loadedMods = [], depRelations = [];
 
+//正则表达式
+//检查字符串末尾的/
+var rlastSlash = /\/$/,
+//以.js结尾
+    rJs = /\.js$/,
+//以.html或者/htm结尾
+    rhtml = /[^\/]+\.htm[l]?/,
+//以http://,./,../或者/开头
+    rabsoluteUrl = /^\s*(?:http[s]?:\/\/|\/|\.\/|\.\.\/)/,
+//不以http://,./,../开头并且只包含\w,-,_
+    rvalidMapId = /^\s*(?!\.\/|\.\.\/|http[s]?:\/\/)[\w_\-\.]+]/;
+
 //设置option
 var config = function (opt) {
 
@@ -32,15 +44,24 @@ var config = function (opt) {
 
         if (opt.hasOwnProperty(key) && option.hasOwnProperty(key)) {
 
+            if (key === 'map') {
+
+                for (var id in opt.map) {
+
+                    if (opt.map.hasOwnProperty(id)) {
+
+                        if (!rvalidMapId.test(id)) {
+
+                            throw new Error('不合法的模块id: ' + id + '，请检查require.config设置的map属性。');
+                        }
+                    }
+                }
+            }
+
             option[key] = opt[key];
         }
     }
 };
-
-var rlastSlash = /\/$/,
-    rJs = /\.js$/,
-    rhtml = /[^\/]+\.htm[l]?(?:.*)?/,
-    rabsoluteUrl = /^\s*(?:http[s]?:\/\/|\/|\.\/|\.\.\/)/;
 
 //工具函数，判断是否为绝对路径
 //绝对路径包括以/, ../,./,http://,https://开始的路径
