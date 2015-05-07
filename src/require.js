@@ -2,6 +2,7 @@
  * Created by Ellery1 on 15/4/30.
  * AMD模块加载器，使用方式几乎和RequireJS完全相同
  * 仅实现了RequireJS的基础特性，不支持shims,懒加载等高级特性
+ * 实现原理：通过define函数的第二个参数数组读取模块的依赖并递归生成依赖树，在所有依赖被加载后解析所有模块，之后执行callback
  */
 
 var option = {
@@ -321,7 +322,7 @@ var define = function (id, deps, callback) {
 //定义一个define的别名，为主入口文件使用的require，在require函数中无法自定义id
 var require = function (deps, callback) {
 
-    return define.apply(window, [null, deps, callback]);
+    define.apply(window, [null, deps, callback]);
 };
 
 define.amd = true;
