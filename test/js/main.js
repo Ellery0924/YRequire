@@ -5,7 +5,9 @@
 require.config({
     baseUrl: 'js',
     map: {
-        'http://mod2test': '/YRequire/test/js/vendor/mod2',
+        //非法的模块id
+        //'http://mod2test': '/YRequire/test/js/vendor/mod2',
+        'mod2':'/YRequire/test/js/vendor/mod2',
         'jquery': 'http://code.jquery.com/jquery-1.10.2.js',
     }
 });
