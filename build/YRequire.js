@@ -412,6 +412,12 @@ var _getCurrentSrc = function () {
     return document.currentScript.src;
 };
 
+var _getAbsolutePath = function (url) {
+
+    return url.replace(window.location.origin, '').replace(rJs, '');
+};
+
+//获取相对的路径
 var _getRelativePath = function (url) {
 
     var host = window.location.origin,
@@ -420,8 +426,13 @@ var _getRelativePath = function (url) {
     return url
         .replace(host, '')
         .replace(pageRoot, '')
-        .replace(rJs, '')
-        .replace(_getBaseUrl(option.baseUrl), '');
+        .replace(rJs, '');
+};
+
+//获取相对于baseUrl的路径
+var _getRelToBasePath = function (path) {
+
+    return path.replace(_getBaseUrl(option.baseUrl), '');
 };
 
 //根据脚本src属性创建一个模块id
@@ -432,11 +443,11 @@ var _createId = function (url) {
     var id,
         map = option.map;
 
-    id = _getRelativePath(url);
+    id = _getRelToBasePath(_getRelativePath(url));
 
     for (var key in map) {
 
-        if (map.hasOwnProperty(key) && map[key] === id) {
+        if (map.hasOwnProperty(key) && (map[key] === id || map[key] === _getAbsolutePath(url) || map[key] === url)) {
 
             return key;
         }
@@ -445,7 +456,7 @@ var _createId = function (url) {
     return id;
 };
 
-//根据key获得一个模块，key可以是map中用户自定义的别名，也可以是默认的id，也可以是通过define的第一个参数定义的id
+//根据key从module对象中读取一个模块，key可以是map中用户自定义的别名，也可以是默认的id，也可以是通过define的第一个参数定义的id
 //先尝试直接根据id从module对象直接读取
 //如果在module对象中找不到，则尝试在module.alias中寻找用户定义的id(define的第一个参数指定的id，而非option.map中的别名)，然后从module中尝试读取
 //非常不推荐后一种做法，用户自定义id将在构建工具中使用
@@ -562,10 +573,12 @@ var define = function (id, deps, callback) {
 
     //获取当前script标签的src属性
     var realSrc = _getCurrentSrc(),
+    //判断循环引用的变量
         realSrcWithoutOrigin = _getRelativePath(realSrc),
     //为模块分配一个id
         modId = _createId(realSrc);
 
+    //防止自己引用自己
     depRelations.push(realSrcWithoutOrigin + ' ' + realSrcWithoutOrigin);
 
     //如果用户自定义id，则使用用户的自定义id为模块id
@@ -603,6 +616,7 @@ var define = function (id, deps, callback) {
             depRelation = realSrcWithoutOrigin + ' ' + realPathWithoutBase,
             reverse = realPathWithoutBase + ' ' + realSrcWithoutOrigin;
 
+        //判断循环引用
         if (_inArray(depRelations, depRelation) === -1) {
 
             depRelations.push(reverse);
