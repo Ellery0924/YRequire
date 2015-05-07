@@ -335,6 +335,7 @@ var loader = (function () {
  * Created by Ellery1 on 15/4/30.
  * AMD模块加载器，使用方式几乎和RequireJS完全相同
  * 仅实现了RequireJS的基础特性，不支持shims,懒加载等高级特性
+ * 实现原理：通过define函数的第二个参数数组读取模块的依赖并递归生成依赖树，在所有依赖被加载后解析所有模块，之后执行callback
  */
 
 var option = {
@@ -357,6 +358,18 @@ var module = {
 };
 var loadedMods = [], depRelations = [];
 
+//正则表达式
+//检查字符串末尾的/
+var rlastSlash = /\/$/,
+//以.js结尾
+    rJs = /\.js$/,
+//以.html或者/htm结尾
+    rhtml = /[^\/]+\.htm[l]?/,
+//以http://,./,../或者/开头
+    rabsoluteUrl = /^\s*(?:http[s]?:\/\/|\/|\.\/|\.\.\/)/,
+//不以http://,./,../开头并且只包含\w,-,_
+    rvalidMapId = /^\s*(?!\.\/|\.\.\/|http[s]?:\/\/)[\w_\-\.]+]/;
+
 //设置option
 var config = function (opt) {
 
@@ -364,15 +377,24 @@ var config = function (opt) {
 
         if (opt.hasOwnProperty(key) && option.hasOwnProperty(key)) {
 
+            if (key === 'map') {
+
+                for (var id in opt.map) {
+
+                    if (opt.map.hasOwnProperty(id)) {
+
+                        if (!rvalidMapId.test(id)) {
+
+                            throw new Error('不合法的模块id: ' + id + '，请检查require.config设置的map属性。');
+                        }
+                    }
+                }
+            }
+
             option[key] = opt[key];
         }
     }
 };
-
-var rlastSlash = /\/$/,
-    rJs = /\.js$/,
-    rhtml = /[^\/]+\.htm[l]?(?:.*)?/,
-    rabsoluteUrl = /^\s*(?:http[s]?:\/\/|\/|\.\/|\.\.\/)/;
 
 //工具函数，判断是否为绝对路径
 //绝对路径包括以/, ../,./,http://,https://开始的路径
@@ -654,7 +676,7 @@ var define = function (id, deps, callback) {
 //定义一个define的别名，为主入口文件使用的require，在require函数中无法自定义id
 var require = function (deps, callback) {
 
-    return define.apply(window, [null, deps, callback]);
+    define.apply(window, [null, deps, callback]);
 };
 
 define.amd = true;
