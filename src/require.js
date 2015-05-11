@@ -96,6 +96,8 @@ var _getRealUrl = function (realPath) {
 };
 
 //获取正在执行的脚本的src，用来设置模块id
+//没有考虑ie的兼容性，这种方式只适用于chrome和ff
+//以后慢慢改
 var _getCurrentSrc = function () {
 
     return document.currentScript.src;
